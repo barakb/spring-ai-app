@@ -15,6 +15,7 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.UrlResource;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileNotFoundException;
@@ -49,7 +50,7 @@ public class AppController {
                          @Value("${documents.directory.path}") String documentsDirectoryPath,
                          EmbeddingModel embeddingModel
     ) {
-        this.vectorStore = (FalkorDBVectorStore)vectorStore;
+        this.vectorStore = (FalkorDBVectorStore) vectorStore;
         this.chatClient = chatClientBuilder
                 .defaultAdvisors(new SimpleLoggerAdvisor())
                 .build();
@@ -84,10 +85,12 @@ public class AppController {
 
     // endpoint to index a file
     @PostMapping("/index")
-    public void indexDocument() throws IOException {
-       vectorStore.deleteGraph();
-       vectorStore.createIndexes();
-        Path directory = Paths.get(documentsDirectoryPath);
+    public void indexDocument(@AuthenticationPrincipal UserOfCustomer userOfCustomer) throws IOException {
+
+        vectorStore.deleteGraph();
+        vectorStore.createIndexes();
+        Path directory = Paths.get(documentsDirectoryPath, userOfCustomer.getTenantId());
+        logger.info("indexing documents in directory: {}", directory);
         try (Stream<Path> paths = Files.list(directory)) {
             paths.filter(Files::isRegularFile)
                     .forEach(path -> {
@@ -147,7 +150,7 @@ public class AppController {
 
     @PostMapping("to-binary")
     public String writeBinary() throws IOException {
-        float [] values = {0.1f, 0.2f, 0.3f};
+        float[] values = {0.1f, 0.2f, 0.3f};
         byte[] binaryData = floatArrayToLittleEndianByteArray(values);
         StringBuilder sb = new StringBuilder();
         for (byte b : binaryData) {

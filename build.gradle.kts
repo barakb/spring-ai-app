@@ -26,6 +26,7 @@ extra["springAiVersion"] = "1.0.0-SNAPSHOT"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 	implementation("org.springframework.ai:spring-ai-falkordb-store-spring-boot-starter:1.0.0-SNAPSHOT")
 	implementation("org.springframework.ai:spring-ai-pdf-document-reader")
